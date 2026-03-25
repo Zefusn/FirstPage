@@ -56,23 +56,25 @@
       position:relative; z-index:2;
       display:flex; flex-direction:column; align-items:center;
       gap:50px;
-      padding:100px 120px;
-      border-radius:52px;
-      width:min(1250px, 95vw);
-      min-height:580px;
+      padding:85px 100px;
+      border-radius:48px;
+      width:min(1060px, 92vw);
+      min-height:500px;
 
-      backdrop-filter:blur(100px) saturate(220%) brightness(1.12);
-      background:linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,255,255,0.30));
+      backdrop-filter:blur(90px) saturate(200%) brightness(1.1);
+      background:linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.28));
 
       box-shadow:
-        0 100px 240px rgba(0,0,0,0.18),
-        inset 0 1px 0 rgba(255,255,255,0.95),
-        inset 0 -1px 0 rgba(255,255,255,0.5);
+        0 80px 200px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.9);
 
-      border:1px solid rgba(255,255,255,0.85);
+      border:1px solid rgba(255,255,255,0.8);
       transform-style:preserve-3d;
-      transition:transform .25s ease-out;
+      transition:transform .18s ease-out;
       overflow:hidden;
+
+      /* 整体缩小到85% */
+      transform:scale(0.85);
     }
 
     /* 主高光（随鼠标） */
@@ -219,10 +221,26 @@
   <script>
     const card=document.getElementById('card');
 
+    // 惯性 + 阻尼系统（丝滑核心）
+    let currentX = 0, currentY = 0;
+    let targetX = 0, targetY = 0;
+    let raf = null;
+
+    function animate(){
+      // 阻尼（越小越丝滑）
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+
+      card.style.transform = `scale(0.85) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
+
+      raf = requestAnimationFrame(animate);
+    }
+
+    animate();
+
     document.addEventListener('mousemove',e=>{
-      const x=(window.innerWidth/2 - e.clientX)/55;
-      const y=(window.innerHeight/2 - e.clientY)/55;
-      card.style.transform=`rotateY(${x}deg) rotateX(${-y}deg)`;
+      targetX = (window.innerWidth/2 - e.clientX)/70;
+      targetY = -(window.innerHeight/2 - e.clientY)/70;
 
       const rect=card.getBoundingClientRect();
       const mx=((e.clientX-rect.left)/rect.width)*100;
@@ -232,7 +250,8 @@
     });
 
     document.addEventListener('mouseleave',()=>{
-      card.style.transform='rotateY(0deg) rotateX(0deg)';
+      targetX = 0;
+      targetY = 0;
     });
 
     // 壁纸 + 双主题色 + 对比优化
