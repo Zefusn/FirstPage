@@ -111,10 +111,10 @@
     .avatar img { width:100%; height:100%; object-fit:cover; }
 
     .name {
-      font-size:32px; font-weight:700;
-      color:#111;
-      letter-spacing:1px;
-      text-shadow:none;
+      font-size:34px; font-weight:800;
+      color:var(--text-strong);
+      letter-spacing:0.6px;
+      text-shadow:0 2px 10px rgba(0,0,0,0.15);
     }
 
     .links {
@@ -127,25 +127,24 @@
     .link-btn {
       display:flex; align-items:center; justify-content:center;
       text-decoration:none;
-      padding:22px 28px;
-      border-radius:26px;
-      color:#111; /* 强制高对比 */
-      font-size:17px; font-weight:700; letter-spacing:0.6px;
+      padding:20px 26px;
+      border-radius:24px;
+      color:#0b0b0c;
+      font-size:18px; font-weight:800; letter-spacing:0.4px;
 
-      /* 关键：去掉过度透明 */
-      backdrop-filter:blur(20px) saturate(160%);
-      background:rgba(255,255,255,0.96);
+      backdrop-filter:blur(24px) saturate(180%);
+      background:rgba(255,255,255,0.98);
 
-      box-shadow:
-        0 20px 60px rgba(0,0,0,0.22);
-
+      box-shadow:0 18px 50px rgba(0,0,0,0.18);
       border:1px solid rgba(0,0,0,0.06);
-      transition:all .25s ease;
-      position:relative; overflow:hidden;
 
-      /* 关键：强对比文本 */
-      text-shadow:none;
-      -webkit-text-stroke:0;
+      position:relative; overflow:hidden;
+      text-shadow:0 1px 0 rgba(255,255,255,0.6);
+      -webkit-font-smoothing:antialiased;
+
+      /* 跟手优化 */
+      will-change: transform;
+      transition: transform .28s cubic-bezier(.22,.9,.2,1), box-shadow .28s cubic-bezier(.22,.9,.2,1), background .25s ease;
     }
 
     /* 液态扫光 */
@@ -159,9 +158,17 @@
     .link-btn:hover::after { transform:translateX(120%); }
 
     .link-btn:hover {
-      transform:translateY(-6px);
+      transform:translateY(-6px) scale(1.02);
       background:#ffffff;
       box-shadow:0 30px 80px rgba(0,0,0,0.25);
+      transition: transform .22s cubic-bezier(.22,.9,.2,1), box-shadow .28s cubic-bezier(.22,.9,.2,1);
+    }
+
+    /* iOS 按压反馈 */
+    .link-btn:active {
+      transform:translateY(-2px) scale(0.965);
+      box-shadow:0 12px 28px rgba(0,0,0,0.18);
+      transition: transform .12s cubic-bezier(.2,.8,.2,1);
     }
 
     @keyframes fadeIn {
@@ -174,20 +181,14 @@
 
     @media (prefers-reduced-motion: reduce) {
       * { animation:none !important; transition:none !important; }
+    }
     
     /* 深色背景下按钮增强对比 */
     .dark-bg .link-btn{
-      background:rgba(30,30,35,0.55);
-      border:1px solid rgba(255,255,255,0.18);
-      color:#ffffff;
-      text-shadow:
-        0 1px 3px rgba(0,0,0,0.8),
-        0 0 2px rgba(0,0,0,0.6);
-      -webkit-text-stroke:0.3px rgba(0,0,0,0.6);
-    }
-
-    .dark-bg .link-btn:hover{
-      background:rgba(40,40,45,0.75);
+      background:rgba(255,255,255,0.92);
+      color:#000;
+      border:1px solid rgba(0,0,0,0.08);
+      text-shadow:none;
     }
 
     /* 亮色背景下按钮 */
@@ -195,8 +196,6 @@
       background:rgba(255,255,255,0.88);
       color:#000;
     }
-
-  }
   </style>
 </head>
 
@@ -245,8 +244,9 @@
       card.style.transform = `scale(0.85) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
 
       // 光效也加一点惯性（更真实）
-      card.style.setProperty('--mx', (50 + currentX * 2) + '%');
-      card.style.setProperty('--my', (50 + currentY * 2) + '%');
+      // 修正光效方向（跟随鼠标而不是反向）
+      card.style.setProperty('--mx', (50 - currentX * 2) + '%');
+      card.style.setProperty('--my', (50 - currentY * 2) + '%');
 
       requestAnimationFrame(animate);
     }
