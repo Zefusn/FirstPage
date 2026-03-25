@@ -221,32 +221,41 @@
   <script>
     const card=document.getElementById('card');
 
-    // 惯性 + 阻尼系统（丝滑核心）
+    // 物理级动效系统（弹簧 + 速度 + 阻尼）
     let currentX = 0, currentY = 0;
+    let velocityX = 0, velocityY = 0;
     let targetX = 0, targetY = 0;
-    let raf = null;
+
+    const stiffness = 0.08;   // 弹性（越大越跟手）
+    const damping = 0.82;     // 阻尼（越小越快停）
 
     function animate(){
-      // 阻尼（越小越丝滑）
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
+      // 弹簧力
+      const forceX = (targetX - currentX) * stiffness;
+      const forceY = (targetY - currentY) * stiffness;
+
+      // 速度叠加
+      velocityX = (velocityX + forceX) * damping;
+      velocityY = (velocityY + forceY) * damping;
+
+      // 位置更新
+      currentX += velocityX;
+      currentY += velocityY;
 
       card.style.transform = `scale(0.85) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
 
-      raf = requestAnimationFrame(animate);
+      // 光效也加一点惯性（更真实）
+      card.style.setProperty('--mx', (50 + currentX * 2) + '%');
+      card.style.setProperty('--my', (50 + currentY * 2) + '%');
+
+      requestAnimationFrame(animate);
     }
 
     animate();
 
     document.addEventListener('mousemove',e=>{
-      targetX = (window.innerWidth/2 - e.clientX)/70;
-      targetY = -(window.innerHeight/2 - e.clientY)/70;
-
-      const rect=card.getBoundingClientRect();
-      const mx=((e.clientX-rect.left)/rect.width)*100;
-      const my=((e.clientY-rect.top)/rect.height)*100;
-      card.style.setProperty('--mx', mx+'%');
-      card.style.setProperty('--my', my+'%');
+      targetX = (window.innerWidth/2 - e.clientX)/60;
+      targetY = -(window.innerHeight/2 - e.clientY)/60;
     });
 
     document.addEventListener('mouseleave',()=>{
