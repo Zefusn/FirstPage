@@ -9,15 +9,17 @@ let velocityY = 0;
 let targetX = 0;
 let targetY = 0;
 
-const stiffness = 0.08;
+const motionEnabled = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)').matches;
+const stiffness = 0.07;
 const damping = 0.82;
+const maxTilt = 3.2;
 
 function applyCardTransform() {
   const scale = window.innerWidth < 768 ? 1 : 0.85;
   card.style.transform = `scale(${scale}) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
 }
 
-function animate() {
+function animateCard() {
   const forceX = (targetX - currentX) * stiffness;
   const forceY = (targetY - currentY) * stiffness;
 
@@ -28,43 +30,31 @@ function animate() {
   currentY += velocityY;
 
   if (
-    Math.abs(velocityX) > 0.01 ||
-    Math.abs(velocityY) > 0.01 ||
-    Math.abs(targetX - currentX) > 0.01 ||
-    Math.abs(targetY - currentY) > 0.01
+    Math.abs(velocityX) > 0.005 ||
+    Math.abs(velocityY) > 0.005 ||
+    Math.abs(targetX - currentX) > 0.005 ||
+    Math.abs(targetY - currentY) > 0.005
   ) {
     applyCardTransform();
   }
 
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animateCard);
 }
 
-function updatePointerState(clientX, clientY, max = 12) {
-  targetX = Math.max(-max, Math.min(max, (window.innerWidth / 2 - clientX) / 60));
-  targetY = Math.max(-max, Math.min(max, -(window.innerHeight / 2 - clientY) / 60));
+function updateCardTilt(clientX, clientY) {
+  const rect = card.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const offsetX = (clientX - centerX) / (rect.width / 2);
+  const offsetY = (clientY - centerY) / (rect.height / 2);
+
+  targetX = Math.max(-maxTilt, Math.min(maxTilt, -offsetX * maxTilt));
+  targetY = Math.max(-maxTilt, Math.min(maxTilt, offsetY * maxTilt));
 }
 
-function resetPointerState() {
+function resetCardTilt() {
   targetX = 0;
   targetY = 0;
-}
-
-document.addEventListener('mousemove', e => {
-  updatePointerState(e.clientX, e.clientY);
-});
-
-document.addEventListener('mouseleave', resetPointerState);
-
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-if (isMobile) {
-  document.addEventListener('touchmove', e => {
-    const touch = e.touches[0];
-    if (!touch) return;
-    updatePointerState(touch.clientX, touch.clientY, 10);
-  }, { passive: true });
-
-  document.addEventListener('touchend', resetPointerState);
 }
 
 function loadBackgroundImage() {
@@ -206,7 +196,23 @@ function showFallbackQuote(quotes) {
 
 window.addEventListener('DOMContentLoaded', () => {
   applyCardTransform();
-  requestAnimationFrame(animate);
+  if (motionEnabled) {
+    card.addEventListener('mouseenter', () => {
+      card.style.willChange = 'transform';
+    });
+
+    card.addEventListener('mousemove', e => {
+      updateCardTilt(e.clientX, e.clientY);
+    });
+
+    card.addEventListener('mouseleave', () => {
+      resetCardTilt();
+      card.style.willChange = 'auto';
+    });
+
+    requestAnimationFrame(animateCard);
+  }
+
   loadBackgroundImage();
   getDailyQuote();
 });
