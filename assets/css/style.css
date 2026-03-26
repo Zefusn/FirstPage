@@ -251,15 +251,21 @@ body::after {
     padding:16px 14px 22px;
     overflow-y:auto;
     perspective:none;
+    background-image:none !important;
+    background-color:#edf3fb;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    text-rendering:optimizeLegibility;
     /* 性能优化：禁用动画 */
     animation:none;
   }
 
   body::before {
-    /* 性能优化：禁用动画 */
-    animation:none;
-    /* 性能优化：减少模糊效果 */
-    filter: blur(50px);
+    display:none;
+  }
+
+  body::after {
+    display:none;
   }
 
   .container {
@@ -268,36 +274,47 @@ body::after {
     padding:28px 18px 20px;
     border-radius:26px;
     gap:24px;
-    transform:scale(1);
+    transform:none !important;
+    transform-style:flat;
+    will-change:auto;
+    transition:box-shadow .2s ease;
     /* 性能优化：减少 backdrop-filter 复杂度 */
     backdrop-filter:blur(20px) saturate(120%);
   }
 
   .overlay {
-    /* 性能优化：减少 backdrop-filter 复杂度 */
-    backdrop-filter:blur(20px) saturate(120%);
+    transform:none;
+    backdrop-filter:blur(18px) saturate(118%);
+    background:rgba(255,255,255,0.14);
   }
 
   .profile {
     gap:14px;
+    transform:none;
   }
 
   .avatar {
     width:104px; height:104px;
+    transform:none;
   }
+
+  .avatar:hover { transform:none; }
 
   .name {
     font-size:22px;
+    transform:none;
   }
 
   .intro-line {
     font-size:13px;
     max-width:280px;
+    transform:none;
   }
 
   .daily-quote {
     max-width:100%;
     padding:4px 6px 0;
+    transform:none;
   }
 
   .quote-label {
@@ -315,17 +332,27 @@ body::after {
     font-size:13px;
   }
 
+  .name,
+  .quote-text,
+  .quote-author,
+  .link-btn,
+  .link-title,
+  .link-desc,
+  .footer {
+    text-shadow:none;
+  }
+
   .links {
     grid-template-columns:1fr;
     gap:14px;
+    transform:none;
   }
 
   .link-btn {
     padding:16px 18px;
     min-height:92px;
     border-radius:20px;
-    /* 性能优化：减少 backdrop-filter 复杂度 */
-    backdrop-filter:blur(15px) saturate(120%);
+    backdrop-filter:blur(10px) saturate(115%);
     /* 性能优化：简化过渡效果 */
     transition:transform .2s ease, box-shadow .2s ease;
   }
@@ -358,27 +385,19 @@ body::after {
 
 /* ===== 低性能设备适配 ===== */
 @media (max-width:480px) {
-  body::before {
-    /* 性能优化：完全禁用渐变背景 */
-    display:none;
-  }
-
   .container {
-    /* 性能优化：使用纯色背景 */
-    background:rgba(255,255,255,0.8);
-    backdrop-filter:none;
+    background:linear-gradient(135deg, rgba(255,255,255,0.66), rgba(255,255,255,0.32));
+    backdrop-filter:blur(18px) saturate(118%);
   }
 
   .overlay {
-    /* 性能优化：使用纯色背景 */
-    background:rgba(255,255,255,0.3);
-    backdrop-filter:none;
+    background:rgba(255,255,255,0.12);
+    backdrop-filter:blur(16px) saturate(115%);
   }
 
   .link-btn {
-    /* 性能优化：使用纯色背景 */
-    background:rgba(255,255,255,0.95);
-    backdrop-filter:none;
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(8px) saturate(112%);
   }
 
   .footer {

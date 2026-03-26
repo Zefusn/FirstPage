@@ -1,6 +1,7 @@
 const card = document.getElementById('card');
 const quoteTextEl = document.getElementById('quote-text');
 const quoteAuthorEl = document.getElementById('quote-author');
+const fallbackBackgroundUrl = 'assets/img/home.jpg';
 
 let currentX = 0;
 let currentY = 0;
@@ -71,22 +72,30 @@ if (card && supportsHover) {
   card.addEventListener('mouseleave', resetPointerState);
 }
 
-if (card && isMobile) {
-  card.addEventListener('touchmove', e => {
-    const touch = e.touches[0];
-    if (!touch) return;
-    updatePointerState(touch.clientX, touch.clientY, 7);
-  }, { passive: true });
+function applyBackgroundImage(url, useAnonymous = true) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    if (useAnonymous) {
+      img.crossOrigin = 'Anonymous';
+    }
+    img.decoding = 'async';
+    img.src = url;
 
-  card.addEventListener('touchend', resetPointerState);
-  card.addEventListener('touchcancel', resetPointerState);
+    img.onload = () => {
+      document.body.style.backgroundImage = `url(${url})`;
+      updateAccentColors(img);
+      resolve();
+    };
+
+    img.onerror = reject;
+  });
 }
 
-function loadBackgroundImage() {
+function fetchBackgroundMeta(resolution) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  fetch('https://bing.biturl.top/?resolution=1920&format=json', {
+  return fetch(`https://bing.biturl.top/?resolution=${resolution}&format=json`, {
     signal: controller.signal
   })
     .then(res => {
@@ -96,35 +105,52 @@ function loadBackgroundImage() {
       }
       return res.json();
     })
-    .then(data => {
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.src = data.url;
-
-      img.onload = () => {
-        document.body.style.backgroundImage = `url(${data.url})`;
-        updateAccentColors(img);
-      };
-
-      img.onerror = () => {
-        console.error('背景图片加载失败');
-        document.body.style.backgroundColor = '#f0f0f0';
-      };
-    })
     .catch(error => {
       clearTimeout(timeoutId);
-      console.error('获取背景图失败:', error);
-      document.body.style.backgroundColor = '#f0f0f0';
+      throw error;
     });
+}
+
+async function loadBackgroundImage() {
+  if (isMobile) {
+    try {
+      await applyBackgroundImage(fallbackBackgroundUrl, false);
+      return;
+    } catch (error) {
+      console.error('移动端本地背景图加载失败:', error);
+      document.body.style.backgroundColor = '#f0f0f0';
+      return;
+    }
+  }
+
+  const resolutions = [1920];
+
+  for (const resolution of resolutions) {
+    try {
+      const data = await fetchBackgroundMeta(resolution);
+      await applyBackgroundImage(data.url);
+      return;
+    } catch (error) {
+      console.error(`获取背景图失败(${resolution})`, error);
+    }
+  }
+
+  try {
+    await applyBackgroundImage(fallbackBackgroundUrl, false);
+  } catch (error) {
+    console.error('本地背景图加载失败:', error);
+    document.body.style.backgroundColor = '#f0f0f0';
+  }
 }
 
 function updateAccentColors(img) {
   try {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 60;
-    canvas.height = 60;
-    ctx.drawImage(img, 0, 0, 60, 60);
+    const sampleSize = isMobile ? 36 : 60;
+    canvas.width = sampleSize;
+    canvas.height = sampleSize;
+    ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
 
     let r = 0;
     let g = 0;
@@ -134,7 +160,7 @@ function updateAccentColors(img) {
     let g2 = 0;
     let b2 = 0;
 
-    const pixels = ctx.getImageData(0, 0, 60, 60).data;
+    const pixels = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
     for (let i = 0; i < pixels.length; i += 4) {
       const pr = pixels[i];
       const pg = pixels[i + 1];
@@ -164,7 +190,10 @@ function updateAccentColors(img) {
     document.body.classList.toggle('light-bg', brightness > 160);
     document.body.classList.toggle('dark-bg', brightness <= 160);
   } catch (error) {
-    console.error('颜色分析失败:', error);
+    document.documentElement.style.setProperty('--accent', '200,200,255');
+    document.documentElement.style.setProperty('--accent2', '180,220,255');
+    document.body.classList.remove('dark-bg');
+    document.body.classList.add('light-bg');
   }
 }
 
@@ -221,7 +250,9 @@ function showFallbackQuote(quotes) {
 
 window.addEventListener('DOMContentLoaded', () => {
   applyCardTransform();
-  requestAnimationFrame(animate);
+  if (!isMobile) {
+    requestAnimationFrame(animate);
+  }
   loadBackgroundImage();
   getDailyQuote();
 });
