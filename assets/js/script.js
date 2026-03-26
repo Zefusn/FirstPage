@@ -1,14 +1,22 @@
-// 性能优化：使用requestAnimationFrame进行动画
 const card = document.getElementById('card');
+const quoteTextEl = document.getElementById('quote-text');
+const quoteAuthorEl = document.getElementById('quote-author');
 
-let currentX = 0, currentY = 0;
-let velocityX = 0, velocityY = 0;
-let targetX = 0, targetY = 0;
+let currentX = 0;
+let currentY = 0;
+let velocityX = 0;
+let velocityY = 0;
+let targetX = 0;
+let targetY = 0;
 
 const stiffness = 0.08;
 const damping = 0.82;
 
-// 优化动画性能
+function applyCardTransform() {
+  const scale = window.innerWidth < 768 ? 1 : 0.85;
+  card.style.transform = `scale(${scale}) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
+}
+
 function animate() {
   const forceX = (targetX - currentX) * stiffness;
   const forceY = (targetY - currentY) * stiffness;
@@ -19,200 +27,186 @@ function animate() {
   currentX += velocityX;
   currentY += velocityY;
 
-  // 性能优化：只在有变化时更新DOM
-  if (Math.abs(velocityX) > 0.01 || Math.abs(velocityY) > 0.01) {
-    const scale = window.innerWidth < 768 ? 1 : 0.85;
-    card.style.transform = `scale(${scale}) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
-    card.style.setProperty('--mx', (50 - currentX * 1.6) + '%');
-    card.style.setProperty('--my', (50 - currentY * 1.6) + '%');
+  if (
+    Math.abs(velocityX) > 0.01 ||
+    Math.abs(velocityY) > 0.01 ||
+    Math.abs(targetX - currentX) > 0.01 ||
+    Math.abs(targetY - currentY) > 0.01
+  ) {
+    applyCardTransform();
   }
 
   requestAnimationFrame(animate);
 }
 
-// 延迟启动动画，提升页面加载速度
-setTimeout(animate, 100);
+function updatePointerState(clientX, clientY, max = 12) {
+  targetX = Math.max(-max, Math.min(max, (window.innerWidth / 2 - clientX) / 60));
+  targetY = Math.max(-max, Math.min(max, -(window.innerHeight / 2 - clientY) / 60));
+}
 
-// 事件监听器优化
-document.addEventListener('mousemove', e => {
-  const max = 12;
-  targetX = Math.max(-max, Math.min(max, (window.innerWidth / 2 - e.clientX) / 60));
-  targetY = Math.max(-max, Math.min(max, -(window.innerHeight / 2 - e.clientY) / 60));
-});
-
-document.addEventListener('mouseleave', () => {
+function resetPointerState() {
   targetX = 0;
   targetY = 0;
+}
+
+document.addEventListener('mousemove', e => {
+  updatePointerState(e.clientX, e.clientY);
 });
 
-/* ===== 移动端触摸补充 ===== */
+document.addEventListener('mouseleave', resetPointerState);
+
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if (isMobile) {
-  // 移动端优化：使用passive事件监听器
   document.addEventListener('touchmove', e => {
-    const max = 10;
-    targetX = Math.max(-max, Math.min(max, (window.innerWidth / 2 - e.touches[0].clientX) / 60));
-    targetY = Math.max(-max, Math.min(max, -(window.innerHeight / 2 - e.touches[0].clientY) / 60));
+    const touch = e.touches[0];
+    if (!touch) return;
+    updatePointerState(touch.clientX, touch.clientY, 10);
   }, { passive: true });
 
-  document.addEventListener('touchend', () => {
-    targetX = 0;
-    targetY = 0;
-  });
+  document.addEventListener('touchend', resetPointerState);
 }
 
-/* 背景图 */
 function loadBackgroundImage() {
-  // 添加错误处理和超时
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  fetch("https://bing.biturl.top/?resolution=1920&format=json", {
+  fetch('https://bing.biturl.top/?resolution=1920&format=json', {
     signal: controller.signal
   })
-  .then(res => {
-    clearTimeout(timeoutId);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    return res.json();
-  })
-  .then(data => {
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.src = data.url;
-    
-    // 预加载图片
-    img.onload = () => {
-      document.body.style.backgroundImage = `url(${data.url})`;
-      updateAccentColors(img);
-    };
-    
-    img.onerror = () => {
-      console.error('背景图片加载失败');
-      // 使用默认背景色
+    .then(res => {
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = data.url;
+
+      img.onload = () => {
+        document.body.style.backgroundImage = `url(${data.url})`;
+        updateAccentColors(img);
+      };
+
+      img.onerror = () => {
+        console.error('背景图片加载失败');
+        document.body.style.backgroundColor = '#f0f0f0';
+      };
+    })
+    .catch(error => {
+      clearTimeout(timeoutId);
+      console.error('获取背景图失败:', error);
       document.body.style.backgroundColor = '#f0f0f0';
-    };
-  })
-  .catch(error => {
-    clearTimeout(timeoutId);
-    console.error('获取背景图失败:', error);
-    // 使用默认背景色
-    document.body.style.backgroundColor = '#f0f0f0';
-  });
+    });
 }
 
-// 提取颜色分析为单独函数
 function updateAccentColors(img) {
   try {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 60; canvas.height = 60;
+    canvas.width = 60;
+    canvas.height = 60;
     ctx.drawImage(img, 0, 0, 60, 60);
 
-    let r = 0, g = 0, b = 0, count = 0;
-    let r2 = 0, g2 = 0, b2 = 0;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let count = 0;
+    let r2 = 0;
+    let g2 = 0;
+    let b2 = 0;
 
     const pixels = ctx.getImageData(0, 0, 60, 60).data;
     for (let i = 0; i < pixels.length; i += 4) {
-      const pr = pixels[i], pg = pixels[i + 1], pb = pixels[i + 2];
-      r += pr; g += pg; b += pb;
-      if (i % 8 === 0) { r2 += pr; g2 += pg; b2 += pb; }
+      const pr = pixels[i];
+      const pg = pixels[i + 1];
+      const pb = pixels[i + 2];
+      r += pr;
+      g += pg;
+      b += pb;
+      if (i % 8 === 0) {
+        r2 += pr;
+        g2 += pg;
+        b2 += pb;
+      }
       count++;
     }
 
-    r = Math.floor(r / count); g = Math.floor(g / count); b = Math.floor(b / count);
-    r2 = Math.floor(r2 / (count / 2)); g2 = Math.floor(g2 / (count / 2)); b2 = Math.floor(b2 / (count / 2));
+    r = Math.floor(r / count);
+    g = Math.floor(g / count);
+    b = Math.floor(b / count);
+    r2 = Math.floor(r2 / (count / 2));
+    g2 = Math.floor(g2 / (count / 2));
+    b2 = Math.floor(b2 / (count / 2));
 
     document.documentElement.style.setProperty('--accent', `${r},${g},${b}`);
     document.documentElement.style.setProperty('--accent2', `${r2},${g2},${b2}`);
 
-    const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
-
-    if (brightness > 160) {
-      document.body.classList.add('light-bg');
-    } else {
-      document.body.classList.add('dark-bg');
-    }
+    const brightness = r * 0.299 + g * 0.587 + b * 0.114;
+    document.body.classList.toggle('light-bg', brightness > 160);
+    document.body.classList.toggle('dark-bg', brightness <= 160);
   } catch (error) {
     console.error('颜色分析失败:', error);
   }
 }
 
-/* 每日一句 */
 function getDailyQuote() {
-  // 扩展备选名言列表
   const fallbackQuotes = [
-    { content: "保持好奇，慢慢变好", author: "未知" },
-    { content: "行动是成功的阶梯，行动越多，登得越高", author: "未知" },
-    { content: "每一个不曾起舞的日子，都是对生命的辜负", author: "尼采" },
-    { content: "生活不是缺少美，而是缺少发现美的眼睛", author: "罗丹" },
-    { content: "成功不是终点，失败也不是终结，只有勇气才是永恒", author: "丘吉尔" },
-    { content: "路漫漫其修远兮，吾将上下而求索", author: "屈原" },
-    { content: "山重水复疑无路，柳暗花明又一村", author: "陆游" },
-    { content: "天行健，君子以自强不息", author: "《周易》" },
-    { content: "地势坤，君子以厚德载物", author: "《周易》" },
-    { content: "海纳百川，有容乃大", author: "林则徐" }
+    { content: '\u4FDD\u6301\u597D\u5947\uFF0C\u6162\u6162\u53D8\u597D\u3002', author: '\u672A\u77E5' },
+    { content: '\u884C\u52A8\u662F\u6210\u529F\u7684\u9636\u68AF\uFF0C\u884C\u52A8\u8D8A\u591A\uFF0C\u767B\u5F97\u8D8A\u9AD8\u3002', author: '\u672A\u77E5' },
+    { content: '\u6BCF\u4E00\u4E2A\u4E0D\u66FE\u8D77\u821E\u7684\u65E5\u5B50\uFF0C\u90FD\u662F\u5BF9\u751F\u547D\u7684\u8F9C\u8D1F\u3002', author: '\u5C3C\u91C7' },
+    { content: '\u751F\u6D3B\u4E0D\u662F\u7F3A\u5C11\u7F8E\uFF0C\u800C\u662F\u7F3A\u5C11\u53D1\u73B0\u7F8E\u7684\u773C\u775B\u3002', author: '\u7F57\u4E39' },
+    { content: '\u6210\u529F\u4E0D\u662F\u7EC8\u70B9\uFF0C\u5931\u8D25\u4E5F\u4E0D\u662F\u7EC8\u7ED3\uFF0C\u53EA\u6709\u52C7\u6C14\u624D\u662F\u6C38\u6052\u3002', author: '\u4E18\u5409\u5C14' },
+    { content: '\u8DEF\u6F2B\u6F2B\u5176\u4FEE\u8FDC\u516E\uFF0C\u543E\u5C06\u4E0A\u4E0B\u800C\u6C42\u7D22\u3002', author: '\u5C48\u539F' },
+    { content: '\u5C71\u91CD\u6C34\u590D\u7591\u65E0\u8DEF\uFF0C\u67F3\u6697\u82B1\u660E\u53C8\u4E00\u6751\u3002', author: '\u9646\u6E38' },
+    { content: '\u5929\u884C\u5065\uFF0C\u541B\u5B50\u4EE5\u81EA\u5F3A\u4E0D\u606F\u3002', author: '\u300A\u5468\u6613\u300B' },
+    { content: '\u5730\u52BF\u5764\uFF0C\u541B\u5B50\u4EE5\u539A\u5FB7\u8F7D\u7269\u3002', author: '\u300A\u5468\u6613\u300B' },
+    { content: '\u6D77\u7EB3\u767E\u5DDD\uFF0C\u6709\u5BB9\u4E43\u5927\u3002', author: '\u6797\u5219\u5F90' }
   ];
 
-  // 检查网络状态
   if (!navigator.onLine) {
-    console.log('网络离线，使用本地备选名言');
     showFallbackQuote(fallbackQuotes);
     return;
   }
 
-  // 尝试从API获取名言（添加超时设置）
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  fetch("https://type.fit/api/quotes", {
+  fetch('https://v1.hitokoto.cn/?encode=json', {
     signal: controller.signal
   })
-  .then(res => {
-    clearTimeout(timeoutId);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    return res.json();
-  })
-  .then(data => {
-    console.log('获取名言成功:', data);
-    // 从返回的名言数组中随机选择一条
-    const randomIndex = Math.floor(Math.random() * data.length);
-    const randomQuote = data[randomIndex];
-    document.getElementById('quote-text').textContent = `"${randomQuote.text}"`;
-    document.getElementById('quote-author').textContent = `- ${randomQuote.author || '未知'}`;
-  })
-  .catch(error => {
-    clearTimeout(timeoutId);
-    console.error('获取每日一句失败:', error);
-    // 使用备选名言
-    showFallbackQuote(fallbackQuotes);
-  });
+    .then(res => {
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      const content = data.hitokoto || fallbackQuotes[0].content;
+      const author = data.from_who || data.from || '\u672A\u77E5';
+      quoteTextEl.textContent = `"${content}"`;
+      quoteAuthorEl.textContent = `- ${author}`;
+    })
+    .catch(error => {
+      clearTimeout(timeoutId);
+      console.error('获取每日一句失败:', error);
+      showFallbackQuote(fallbackQuotes);
+    });
 }
 
-// 显示备选名言
 function showFallbackQuote(quotes) {
   const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-  document.getElementById('quote-text').textContent = `"${randomQuote.content}"`;
-  document.getElementById('quote-author').textContent = `- ${randomQuote.author}`;
+  quoteTextEl.textContent = `"${randomQuote.content}"`;
+  quoteAuthorEl.textContent = `- ${randomQuote.author}`;
 }
 
-// 页面加载完成后初始化
 window.addEventListener('DOMContentLoaded', () => {
-  // 并行加载资源，提升性能
-  Promise.all([
-    new Promise(resolve => {
-      loadBackgroundImage();
-      resolve();
-    }),
-    new Promise(resolve => {
-      getDailyQuote();
-      resolve();
-    })
-  ]).then(() => {
-    console.log('页面资源加载完成');
-  });
+  applyCardTransform();
+  requestAnimationFrame(animate);
+  loadBackgroundImage();
+  getDailyQuote();
 });

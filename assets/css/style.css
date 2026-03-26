@@ -65,7 +65,7 @@ body::after {
 .container {
   position:relative; z-index:2;
   display:flex; flex-direction:column; align-items:center;
-  gap:50px;
+  gap:42px;
   padding:85px 100px;
   border-radius:48px;
   width:min(1060px, 92vw);
@@ -90,14 +90,6 @@ body::after {
   transform:scale(0.85);
 }
 
-.container::after{
-  content:""; position:absolute; inset:0; border-radius:inherit;
-  background:
-    radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.55), transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12), transparent 70%);
-  opacity:0.7; pointer-events:none;
-}
-
 .container::before{
   content:""; position:absolute; inset:0; border-radius:inherit;
   background:linear-gradient(130deg,
@@ -111,7 +103,7 @@ body::after {
 }
 
 .profile { 
-  display:flex; flex-direction:column; align-items:center; gap:24px;
+  display:flex; flex-direction:column; align-items:center; gap:18px;
   transform: translateZ(40px);
 }
 
@@ -135,11 +127,29 @@ body::after {
   transform: translateZ(60px);
 }
 
+.intro-line {
+  max-width:520px;
+  font-size:15px;
+  color:rgba(0,0,0,0.56);
+  line-height:1.7;
+  text-align:center;
+  transform: translateZ(54px);
+}
+
 .daily-quote {
   text-align:center;
   max-width:600px;
-  padding:0 20px;
+  padding:6px 20px 0;
   transform: translateZ(50px);
+}
+
+.quote-label {
+  margin-bottom:10px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.18em;
+  color:rgba(0,0,0,0.36);
+  text-transform:uppercase;
 }
 
 .quote-text {
@@ -165,12 +175,13 @@ body::after {
 }
 
 .link-btn {
-  display:flex; align-items:center; justify-content:center;
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
   text-decoration:none;
-  padding:20px 26px;
+  gap:10px;
+  min-height:110px;
+  padding:22px 26px;
   border-radius:24px;
   color:#0b0b0c;
-  font-size:18px; font-weight:800; letter-spacing:0.4px;
 
   /* 性能优化：减少 backdrop-filter 复杂度 */
   backdrop-filter:blur(20px) saturate(140%);
@@ -209,6 +220,19 @@ body::after {
   transform:translateY(-1px) scale(0.94);
   box-shadow:0 12px 28px rgba(0,0,0,0.18);
   transition: transform .12s cubic-bezier(.3,1.5,.5,1);
+}
+
+.link-title {
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:0.4px;
+}
+
+.link-desc {
+  font-size:13px;
+  line-height:1.6;
+  color:rgba(0,0,0,0.48);
+  font-weight:600;
 }
 
 @keyframes fadeIn {
@@ -254,6 +278,11 @@ body::after {
     font-size:24px;
   }
 
+  .intro-line {
+    font-size:14px;
+    max-width:320px;
+  }
+
   .links {
     grid-template-columns:1fr;
     gap:16px;
@@ -261,7 +290,7 @@ body::after {
 
   .link-btn {
     padding:18px;
-    font-size:16px;
+    min-height:100px;
     /* 性能优化：减少 backdrop-filter 复杂度 */
     backdrop-filter:blur(15px) saturate(120%);
     /* 性能优化：简化过渡效果 */
