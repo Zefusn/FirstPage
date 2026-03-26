@@ -1,61 +1,6 @@
-const card = document.getElementById('card');
 const quoteTextEl = document.getElementById('quote-text');
 const quoteAuthorEl = document.getElementById('quote-author');
-
-let currentX = 0;
-let currentY = 0;
-let velocityX = 0;
-let velocityY = 0;
-let targetX = 0;
-let targetY = 0;
-
-const motionEnabled = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)').matches;
-const stiffness = 0.07;
-const damping = 0.82;
-const maxTilt = 3.2;
-
-function applyCardTransform() {
-  const scale = window.innerWidth < 768 ? 1 : 0.85;
-  card.style.transform = `scale(${scale}) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
-}
-
-function animateCard() {
-  const forceX = (targetX - currentX) * stiffness;
-  const forceY = (targetY - currentY) * stiffness;
-
-  velocityX = (velocityX + forceX) * damping;
-  velocityY = (velocityY + forceY) * damping;
-
-  currentX += velocityX;
-  currentY += velocityY;
-
-  if (
-    Math.abs(velocityX) > 0.005 ||
-    Math.abs(velocityY) > 0.005 ||
-    Math.abs(targetX - currentX) > 0.005 ||
-    Math.abs(targetY - currentY) > 0.005
-  ) {
-    applyCardTransform();
-  }
-
-  requestAnimationFrame(animateCard);
-}
-
-function updateCardTilt(clientX, clientY) {
-  const rect = card.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  const offsetX = (clientX - centerX) / (rect.width / 2);
-  const offsetY = (clientY - centerY) / (rect.height / 2);
-
-  targetX = Math.max(-maxTilt, Math.min(maxTilt, -offsetX * maxTilt));
-  targetY = Math.max(-maxTilt, Math.min(maxTilt, offsetY * maxTilt));
-}
-
-function resetCardTilt() {
-  targetX = 0;
-  targetY = 0;
-}
+const cardEl = document.getElementById('card');
 
 function loadBackgroundImage() {
   const controller = new AbortController();
@@ -145,16 +90,16 @@ function updateAccentColors(img) {
 
 function getDailyQuote() {
   const fallbackQuotes = [
-    { content: '\u4FDD\u6301\u597D\u5947\uFF0C\u6162\u6162\u53D8\u597D\u3002', author: '\u672A\u77E5' },
-    { content: '\u884C\u52A8\u662F\u6210\u529F\u7684\u9636\u68AF\uFF0C\u884C\u52A8\u8D8A\u591A\uFF0C\u767B\u5F97\u8D8A\u9AD8\u3002', author: '\u672A\u77E5' },
-    { content: '\u6BCF\u4E00\u4E2A\u4E0D\u66FE\u8D77\u821E\u7684\u65E5\u5B50\uFF0C\u90FD\u662F\u5BF9\u751F\u547D\u7684\u8F9C\u8D1F\u3002', author: '\u5C3C\u91C7' },
-    { content: '\u751F\u6D3B\u4E0D\u662F\u7F3A\u5C11\u7F8E\uFF0C\u800C\u662F\u7F3A\u5C11\u53D1\u73B0\u7F8E\u7684\u773C\u775B\u3002', author: '\u7F57\u4E39' },
-    { content: '\u6210\u529F\u4E0D\u662F\u7EC8\u70B9\uFF0C\u5931\u8D25\u4E5F\u4E0D\u662F\u7EC8\u7ED3\uFF0C\u53EA\u6709\u52C7\u6C14\u624D\u662F\u6C38\u6052\u3002', author: '\u4E18\u5409\u5C14' },
-    { content: '\u8DEF\u6F2B\u6F2B\u5176\u4FEE\u8FDC\u516E\uFF0C\u543E\u5C06\u4E0A\u4E0B\u800C\u6C42\u7D22\u3002', author: '\u5C48\u539F' },
-    { content: '\u5C71\u91CD\u6C34\u590D\u7591\u65E0\u8DEF\uFF0C\u67F3\u6697\u82B1\u660E\u53C8\u4E00\u6751\u3002', author: '\u9646\u6E38' },
-    { content: '\u5929\u884C\u5065\uFF0C\u541B\u5B50\u4EE5\u81EA\u5F3A\u4E0D\u606F\u3002', author: '\u300A\u5468\u6613\u300B' },
-    { content: '\u5730\u52BF\u5764\uFF0C\u541B\u5B50\u4EE5\u539A\u5FB7\u8F7D\u7269\u3002', author: '\u300A\u5468\u6613\u300B' },
-    { content: '\u6D77\u7EB3\u767E\u5DDD\uFF0C\u6709\u5BB9\u4E43\u5927\u3002', author: '\u6797\u5219\u5F90' }
+    { content: '保持好奇，慢慢变好。', author: '未知' },
+    { content: '行动是成功的阶梯，行动越多，登得越高。', author: '未知' },
+    { content: '每一个不曾起舞的日子，都是对生命的辜负。', author: '尼采' },
+    { content: '生活不是缺少美，而是缺少发现美的眼睛。', author: '罗丹' },
+    { content: '成功不是终点，失败也不是终结，只有勇气才是永恒。', author: '丘吉尔' },
+    { content: '路漫漫其修远兮，吾将上下而求索。', author: '屈原' },
+    { content: '山重水复疑无路，柳暗花明又一村。', author: '陆游' },
+    { content: '天行健，君子以自强不息。', author: '《周易》' },
+    { content: '地势坤，君子以厚德载物。', author: '《周易》' },
+    { content: '海纳百川，有容乃大。', author: '林则徐' }
   ];
 
   if (!navigator.onLine) {
@@ -177,7 +122,7 @@ function getDailyQuote() {
     })
     .then(data => {
       const content = data.hitokoto || fallbackQuotes[0].content;
-      const author = data.from_who || data.from || '\u672A\u77E5';
+      const author = data.from_who || data.from || '未知';
       quoteTextEl.textContent = `"${content}"`;
       quoteAuthorEl.textContent = `- ${author}`;
     })
@@ -194,25 +139,80 @@ function showFallbackQuote(quotes) {
   quoteAuthorEl.textContent = `- ${randomQuote.author}`;
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  applyCardTransform();
-  if (motionEnabled) {
-    card.addEventListener('mouseenter', () => {
-      card.style.willChange = 'transform';
-    });
-
-    card.addEventListener('mousemove', e => {
-      updateCardTilt(e.clientX, e.clientY);
-    });
-
-    card.addEventListener('mouseleave', () => {
-      resetCardTilt();
-      card.style.willChange = 'auto';
-    });
-
-    requestAnimationFrame(animateCard);
+function enableCardTilt() {
+  if (!cardEl) {
+    return;
   }
 
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  if (prefersReducedMotion || !finePointer) {
+    cardEl.style.transform = 'none';
+    return;
+  }
+
+  let rafId = null;
+  let targetRotateX = 0;
+  let targetRotateY = 0;
+  let currentRotateX = 0;
+  let currentRotateY = 0;
+
+  const maxTilt = 2.2;
+  const ease = 0.12;
+
+  const render = () => {
+    currentRotateX += (targetRotateX - currentRotateX) * ease;
+    currentRotateY += (targetRotateY - currentRotateY) * ease;
+
+    const isSettled =
+      Math.abs(targetRotateX - currentRotateX) < 0.01 &&
+      Math.abs(targetRotateY - currentRotateY) < 0.01;
+
+    if (isSettled) {
+      currentRotateX = targetRotateX;
+      currentRotateY = targetRotateY;
+    }
+
+    cardEl.style.transform = `rotateX(${currentRotateX.toFixed(2)}deg) rotateY(${currentRotateY.toFixed(2)}deg)`;
+
+    if (!isSettled) {
+      rafId = window.requestAnimationFrame(render);
+    } else {
+      if (targetRotateX === 0 && targetRotateY === 0) {
+        cardEl.classList.remove('is-tilting');
+      }
+      rafId = null;
+    }
+  };
+
+  const queueRender = () => {
+    if (rafId === null) {
+      rafId = window.requestAnimationFrame(render);
+    }
+  };
+
+  cardEl.addEventListener('pointermove', event => {
+    const rect = cardEl.getBoundingClientRect();
+    const offsetX = (event.clientX - rect.left) / rect.width;
+    const offsetY = (event.clientY - rect.top) / rect.height;
+
+    targetRotateY = (offsetX - 0.5) * maxTilt * 2;
+    targetRotateX = (0.5 - offsetY) * maxTilt * 2;
+
+    cardEl.classList.add('is-tilting');
+    queueRender();
+  });
+
+  cardEl.addEventListener('pointerleave', () => {
+    targetRotateX = 0;
+    targetRotateY = 0;
+    queueRender();
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
   loadBackgroundImage();
   getDailyQuote();
+  enableCardTilt();
 });
