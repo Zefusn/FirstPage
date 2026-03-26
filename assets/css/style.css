@@ -247,7 +247,9 @@ body::after {
 /* ===== 移动端适配（仅新增）===== */
 @media (max-width:768px) {
   body{
-    padding:20px;
+    justify-content:flex-start;
+    padding:16px 14px 22px;
+    overflow-y:auto;
     perspective:none;
     /* 性能优化：禁用动画 */
     animation:none;
@@ -261,9 +263,11 @@ body::after {
   }
 
   .container {
-    padding:50px 24px;
-    border-radius:28px;
-    gap:30px;
+    width:min(100%, 420px);
+    min-height:auto;
+    padding:28px 18px 20px;
+    border-radius:26px;
+    gap:24px;
     transform:scale(1);
     /* 性能优化：减少 backdrop-filter 复杂度 */
     backdrop-filter:blur(20px) saturate(120%);
@@ -274,36 +278,81 @@ body::after {
     backdrop-filter:blur(20px) saturate(120%);
   }
 
+  .profile {
+    gap:14px;
+  }
+
   .avatar {
-    width:110px; height:110px;
+    width:104px; height:104px;
   }
 
   .name {
-    font-size:24px;
+    font-size:22px;
   }
 
   .intro-line {
-    font-size:14px;
-    max-width:320px;
+    font-size:13px;
+    max-width:280px;
+  }
+
+  .daily-quote {
+    max-width:100%;
+    padding:4px 6px 0;
+  }
+
+  .quote-label {
+    margin-bottom:8px;
+    font-size:10px;
+  }
+
+  .quote-text {
+    font-size:15px;
+    line-height:1.65;
+    margin-bottom:6px;
+  }
+
+  .quote-author {
+    font-size:13px;
   }
 
   .links {
     grid-template-columns:1fr;
-    gap:16px;
+    gap:14px;
   }
 
   .link-btn {
-    padding:18px;
-    min-height:100px;
+    padding:16px 18px;
+    min-height:92px;
+    border-radius:20px;
     /* 性能优化：减少 backdrop-filter 复杂度 */
     backdrop-filter:blur(15px) saturate(120%);
     /* 性能优化：简化过渡效果 */
     transition:transform .2s ease, box-shadow .2s ease;
   }
 
+  .link-title {
+    font-size:16px;
+  }
+
+  .link-desc {
+    font-size:12px;
+    line-height:1.55;
+  }
+
   .link-btn::after {
     /* 性能优化：禁用动画 */
     display:none;
+  }
+
+  .footer {
+    position:static;
+    transform:none;
+    width:fit-content;
+    max-width:min(100%, 420px);
+    margin:14px auto 0;
+    padding:8px 14px;
+    font-size:12px;
+    line-height:1.35;
   }
 }
 
@@ -330,6 +379,12 @@ body::after {
     /* 性能优化：使用纯色背景 */
     background:rgba(255,255,255,0.95);
     backdrop-filter:none;
+  }
+
+  .footer {
+    max-width:calc(100vw - 28px);
+    font-size:11px;
+    padding:8px 12px;
   }
 }
 
