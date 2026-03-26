@@ -248,7 +248,7 @@ body::after {
 @media (max-width:768px) {
   body{
     justify-content:flex-start;
-    padding:16px 14px 22px;
+    padding:10px 14px 16px;
     overflow-y:auto;
     perspective:none;
     background-image:none !important;
@@ -271,9 +271,9 @@ body::after {
   .container {
     width:min(100%, 420px);
     min-height:auto;
-    padding:28px 18px 20px;
+    padding:22px 18px 16px;
     border-radius:26px;
-    gap:24px;
+    gap:18px;
     transform:none !important;
     transform-style:flat;
     will-change:auto;
@@ -289,7 +289,7 @@ body::after {
   }
 
   .profile {
-    gap:14px;
+    gap:10px;
     transform:none;
   }
 
@@ -313,19 +313,19 @@ body::after {
 
   .daily-quote {
     max-width:100%;
-    padding:4px 6px 0;
+    padding:0 6px 0;
     transform:none;
   }
 
   .quote-label {
-    margin-bottom:8px;
+    margin-bottom:6px;
     font-size:10px;
   }
 
   .quote-text {
     font-size:15px;
     line-height:1.65;
-    margin-bottom:6px;
+    margin-bottom:4px;
   }
 
   .quote-author {
@@ -344,17 +344,16 @@ body::after {
 
   .links {
     grid-template-columns:1fr;
-    gap:14px;
+    gap:10px;
     transform:none;
   }
 
   .link-btn {
-    padding:16px 18px;
-    min-height:92px;
+    padding:14px 16px;
+    min-height:76px;
     border-radius:20px;
     backdrop-filter:blur(10px) saturate(115%);
-    /* 性能优化：简化过渡效果 */
-    transition:transform .2s ease, box-shadow .2s ease;
+    transition:none;
   }
 
   .link-title {
@@ -367,8 +366,14 @@ body::after {
   }
 
   .link-btn::after {
-    /* 性能优化：禁用动画 */
     display:none;
+  }
+
+  .link-btn:hover,
+  .link-btn:active {
+    transform:none;
+    box-shadow:0 18px 50px rgba(0,0,0,0.18);
+    background:rgba(255,255,255,0.98);
   }
 
   .footer {
@@ -376,7 +381,7 @@ body::after {
     transform:none;
     width:fit-content;
     max-width:min(100%, 420px);
-    margin:14px auto 0;
+    margin:8px auto 0;
     padding:8px 14px;
     font-size:12px;
     line-height:1.35;
