@@ -9,8 +9,8 @@
 * { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif; }
 
 body {
-  min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;
-  padding:60px 60px 100px;
+  min-height:100vh; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
+  padding:20px 60px 140px;
   background-size:cover; background-position:center; overflow:hidden;
   animation:fadeIn 1.2s ease;
   perspective:1600px;
