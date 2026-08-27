@@ -80,6 +80,23 @@ if (card && tiltEnabled) {
   card.addEventListener('mouseleave', resetPointerState);
 }
 
+const bgImageEl = document.getElementById('bg-image');
+
+function showBgImage(url) {
+  if (!bgImageEl) {
+    // 兜底：无图层元素时保持旧行为
+    document.body.style.backgroundImage = `url(${url})`;
+    return;
+  }
+  bgImageEl.style.backgroundImage = `url(${url})`;
+  // 下一帧再加类名，确保浏览器先完成贴图、再平滑淡入
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bgImageEl.classList.add('bg-visible');
+    });
+  });
+}
+
 function applyBackgroundImage(url, useAnonymous = true) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -90,7 +107,7 @@ function applyBackgroundImage(url, useAnonymous = true) {
     img.src = url;
 
     img.onload = () => {
-      document.body.style.backgroundImage = `url(${url})`;
+      showBgImage(url);
       updateAccentColors(img);
       resolve();
     };

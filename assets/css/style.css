@@ -52,6 +52,16 @@ body::after {
   opacity:0.08;
 }
 
+/* 壁纸独立图层：加载后淡入，避免「壁纸先出现、玻璃后叠加」的突兀跳变 */
+.bg-image {
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  opacity:0;
+  transition:opacity .9s ease;
+}
+
+.bg-image.bg-visible { opacity:1; }
+
 @keyframes float {
   from { transform:translateY(-40px) scale(1); }
   to { transform:translateY(40px) scale(1.08); }
