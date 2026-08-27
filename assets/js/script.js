@@ -17,7 +17,12 @@ function applyCardTransform() {
   if (!card) {
     return;
   }
-  const scale = window.innerWidth < 768 ? 1 : 0.85;
+  // 二级页面与移动端不做任何变换，保证文字按物理像素清晰渲染
+  if (isSecondaryPage || window.innerWidth < 768) {
+    card.style.transform = '';
+    return;
+  }
+  const scale = 0.85;
   card.style.transform = `scale(${scale}) rotateY(${currentX}deg) rotateX(${currentY}deg)`;
 }
 
@@ -62,9 +67,12 @@ function resetPointerState() {
 }
 
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// 二级页面（body.scroll-page）：卡片固定不动，禁用 3D 倾斜跟随
+const isSecondaryPage = document.body.classList.contains('scroll-page');
 const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+const tiltEnabled = supportsHover && !isSecondaryPage;
 
-if (card && supportsHover) {
+if (card && tiltEnabled) {
   card.addEventListener('mousemove', e => {
     updatePointerState(e.clientX, e.clientY);
   });
@@ -198,6 +206,10 @@ function updateAccentColors(img) {
 }
 
 function getDailyQuote() {
+  if (!quoteTextEl || !quoteAuthorEl) {
+    return;
+  }
+
   const fallbackQuotes = [
     { content: '\u4FDD\u6301\u597D\u5947\uFF0C\u6162\u6162\u53D8\u597D\u3002', author: '\u672A\u77E5' },
     { content: '\u884C\u52A8\u662F\u6210\u529F\u7684\u9636\u68AF\uFF0C\u884C\u52A8\u8D8A\u591A\uFF0C\u767B\u5F97\u8D8A\u9AD8\u3002', author: '\u672A\u77E5' },
@@ -250,7 +262,7 @@ function showFallbackQuote(quotes) {
 
 window.addEventListener('DOMContentLoaded', () => {
   applyCardTransform();
-  if (!isMobile) {
+  if (!isMobile && !isSecondaryPage) {
     requestAnimationFrame(animate);
   }
   loadBackgroundImage();

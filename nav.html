@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>业务导航</title>
+  <link rel="icon" href="assets/img/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body class="scroll-page">
+  <div class="overlay"></div>
+
+  <div class="container" id="card">
+    <a class="back-btn" href="index.html">&larr; 返回首页</a>
+
+    <div class="page-header">
+      <div class="page-title">业务导航</div>
+      <div class="page-subtitle">各类业务入口集中管理 · 点击卡片直达</div>
+      <label class="nav-search">
+        <input type="search" id="nav-search-input" placeholder="搜索业务或关键词..." autocomplete="off" />
+      </label>
+    </div>
+
+    <div class="nav-sections" id="nav-sections"></div>
+
+    <div class="nav-empty" id="nav-empty" hidden>未找到匹配的导航，换个关键词试试</div>
+  </div>
+
+  <div class="footer">
+    &copy; 2026 Zefusn &middot; 保持热爱，无限进步
+  </div>
+
+  <script src="assets/js/script.js"></script>
+  <script>
+    const NAV_DATA = [
+      {
+        group: '我的业务',
+        items: [
+          { title: '博客', desc: '记录笔记与项目沉淀', url: 'https://www.note.luckymax.cn/' },
+          { title: '传输', desc: '快速在设备之间分享文件', url: 'https://www.snapdrop.luckymax.cn/' },
+          { title: '壁纸', desc: '收藏和切换视觉灵感', url: 'https://www.im.luckymax.cn/' },
+          { title: '基金', desc: '查看理财与数据入口', url: 'https://www.gd.luckymax.cn/' }
+        ]
+      },
+      {
+        group: '开发工具',
+        items: [
+          { title: 'GitHub', desc: '托管仓库与协作开发', url: 'https://github.com' },
+          { title: 'Stack Overflow', desc: '技术问题搜索与解答', url: 'https://stackoverflow.com' },
+          { title: 'MDN Web', desc: '前端权威开发文档', url: 'https://developer.mozilla.org/zh-CN/' },
+          { title: 'Can I Use', desc: '浏览器特性兼容查询', url: 'https://caniuse.com' }
+        ]
+      },
+      {
+        group: '云服务',
+        items: [
+          { title: '阿里云', desc: '控制台与云产品管理', url: 'https://www.aliyun.com' },
+          { title: '腾讯云', desc: '资源监控与费用中心', url: 'https://cloud.tencent.com' },
+          { title: 'Cloudflare', desc: '域名解析与安全防护', url: 'https://dash.cloudflare.com' }
+        ]
+      },
+      {
+        group: '设计灵感',
+        items: [
+          { title: 'Figma', desc: '在线协作设计工具', url: 'https://www.figma.com' },
+          { title: 'Iconfont', desc: '矢量图标库与管理', url: 'https://www.iconfont.cn' }
+        ]
+      }
+    ];
+
+    const sectionsEl = document.getElementById('nav-sections');
+    const emptyEl = document.getElementById('nav-empty');
+    const searchInput = document.getElementById('nav-search-input');
+
+    function buildNav() {
+      const fragment = document.createDocumentFragment();
+
+      NAV_DATA.forEach(data => {
+        const section = document.createElement('section');
+        section.className = 'nav-section';
+
+        const head = document.createElement('div');
+        head.className = 'section-head';
+        const label = document.createElement('h2');
+        label.className = 'section-label';
+        label.textContent = data.group;
+        const line = document.createElement('span');
+        line.className = 'section-line';
+        head.appendChild(label);
+        head.appendChild(line);
+
+        const grid = document.createElement('div');
+        grid.className = 'links';
+        data.items.forEach(item => {
+          const link = document.createElement('a');
+          link.className = 'link-btn';
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.dataset.keywords = `${data.group} ${item.title} ${item.desc}`.toLowerCase();
+          link.innerHTML =
+            `<span class="link-title">${item.title}</span>` +
+            `<span class="link-desc">${item.desc}</span>`;
+          grid.appendChild(link);
+        });
+
+        section.appendChild(head);
+        section.appendChild(grid);
+        fragment.appendChild(section);
+      });
+
+      sectionsEl.appendChild(fragment);
+    }
+
+    function filterNav() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+
+      sectionsEl.querySelectorAll('.nav-section').forEach(section => {
+        let sectionVisible = 0;
+        section.querySelectorAll('.link-btn').forEach(btn => {
+          const hit = !keyword || btn.dataset.keywords.includes(keyword);
+          btn.hidden = !hit;
+          if (hit) sectionVisible++;
+        });
+        section.hidden = sectionVisible === 0;
+        visibleCount += sectionVisible;
+      });
+
+      emptyEl.hidden = visibleCount !== 0;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!sectionsEl) return;
+      buildNav();
+      searchInput.addEventListener('input', filterNav);
+    });
+  </script>
+</body>
+</html>
