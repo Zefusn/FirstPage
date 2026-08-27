@@ -1,7 +1,6 @@
 const card = document.getElementById('card');
 const quoteTextEl = document.getElementById('quote-text');
 const quoteAuthorEl = document.getElementById('quote-author');
-const fallbackBackgroundUrl = 'assets/img/home.jpg';
 
 let currentX = 0;
 let currentY = 0;
@@ -137,35 +136,22 @@ function fetchBackgroundMeta(resolution) {
 }
 
 async function loadBackgroundImage() {
+  // 移动端需求：纯色玻璃，不加载任何背景图
   if (isMobile) {
-    try {
-      await applyBackgroundImage(fallbackBackgroundUrl, false);
-      return;
-    } catch (error) {
-      console.error('移动端本地背景图加载失败:', error);
-      document.body.style.backgroundColor = '#f0f0f0';
-      return;
-    }
-  }
-
-  const resolutions = [1920];
-
-  for (const resolution of resolutions) {
-    try {
-      const data = await fetchBackgroundMeta(resolution);
-      await applyBackgroundImage(data.url);
-      return;
-    } catch (error) {
-      console.error(`获取背景图失败(${resolution})`, error);
-    }
+    document.body.style.backgroundColor = '#edf3fb';
+    return;
   }
 
   try {
-    await applyBackgroundImage(fallbackBackgroundUrl, false);
+    const data = await fetchBackgroundMeta(1920);
+    await applyBackgroundImage(data.url);
+    return;
   } catch (error) {
-    console.error('本地背景图加载失败:', error);
-    document.body.style.backgroundColor = '#f0f0f0';
+    console.error('获取Bing背景图失败:', error);
   }
+
+  // 需求：未加载出 Bing 壁纸时保持纯色玻璃，不再回退本地图片
+  document.body.style.backgroundColor = '#edf3fb';
 }
 
 function updateAccentColors(img) {

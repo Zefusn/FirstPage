@@ -37,7 +37,7 @@ body {
 }
 
 body::before {
-  content:""; position:absolute; inset:0;
+  content:""; position:fixed; inset:0;
   background:
     radial-gradient(circle at 20% 30%, rgba(var(--accent),0.35), transparent 40%),
     radial-gradient(circle at 80% 70%, rgba(var(--accent2),0.28), transparent 45%),
@@ -47,14 +47,15 @@ body::before {
 }
 
 body::after {
-  content:""; position:absolute; inset:0;
+  content:""; position:fixed; inset:0;
   background-image:url('https://grainy-gradients.vercel.app/noise.svg');
   opacity:0.08;
 }
 
-/* 壁纸独立图层：加载后淡入，避免「壁纸先出现、玻璃后叠加」的突兀跳变 */
+/* 壁纸独立图层：加载后淡入，避免「壁纸先出现、玻璃后叠加」的突兀跳变。
+   必须用 fixed：页面可滚动时 absolute 只覆盖首屏高度，滚动后会露出底色 */
 .bg-image {
-  position:absolute; inset:0;
+  position:fixed; inset:0;
   background-size:cover; background-position:center;
   opacity:0;
   transition:opacity .9s ease;
@@ -68,7 +69,7 @@ body::after {
 }
 
 .overlay {
-  position:absolute; inset:0;
+  position:fixed; inset:0;
   /* 性能优化：减少 backdrop-filter 复杂度 */
   backdrop-filter:blur(30px) saturate(140%);
   background:rgba(255,255,255,0.16);
@@ -261,7 +262,6 @@ body::after {
     padding:10px 14px 16px;
     overflow-y:auto;
     perspective:none;
-    background-image:none !important;
     background-color:#edf3fb;
     -webkit-font-smoothing:antialiased;
     -moz-osx-font-smoothing:grayscale;
