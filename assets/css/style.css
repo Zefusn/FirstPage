@@ -632,3 +632,53 @@ body.scroll-page {
     line-height:1.5;
   }
 }
+
+/* ===== 首页「业务导航」通栏入口（仅新增）===== */
+.nav-entry {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap:16px;
+  min-height:84px;
+  padding:18px 28px;
+}
+
+.nav-entry-text {
+  display:flex; flex-direction:column; gap:8px;
+}
+
+.nav-entry-go {
+  display:inline-flex; align-items:center; gap:6px;
+  flex-shrink:0;
+  font-size:14px; font-weight:700; letter-spacing:1px;
+  color:rgba(0,0,0,.5);
+  text-shadow:0 1px 0 rgba(255,255,255,.6);
+  transition:
+    transform .25s cubic-bezier(.2,.9,.25,1.15),
+    color .25s ease;
+}
+
+.nav-entry:hover .nav-entry-go {
+  transform:translateX(5px);
+  color:#000;
+}
+
+@media (max-width:768px) {
+  .nav-entry {
+    min-height:60px;
+    padding:13px 16px;
+    gap:10px;
+  }
+
+  .nav-entry-text { gap:4px; }
+
+  .nav-entry-go {
+    font-size:12px;
+    text-shadow:none;
+  }
+
+  .nav-entry:hover .nav-entry-go {
+    transform:none;
+  }
+}
