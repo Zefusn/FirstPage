@@ -527,12 +527,17 @@ body.scroll-page {
   transform: translateZ(50px);
 }
 
-/* nav 页内的卡片网格：默认 4 列（与首页一致），紧凑一屏 */
+/* nav 页内的卡片：flex 布局，不足 4 个时自动拉宽填满整行 */
 .nav-section .links {
-  grid-template-columns:repeat(4, 1fr);
+  display:flex;
+  flex-wrap:wrap;
   gap:14px;
   width:100%;
   max-width:none;
+}
+
+.nav-section .link-btn {
+  flex:1 0 calc(25% - 14px);
 }
 
 .nav-section {
@@ -806,7 +811,6 @@ body.scroll-page {
 
   body.scroll-page .nav-section .links {
     gap:12px;
-    grid-template-columns:repeat(4, 1fr);
   }
 
   body.scroll-page .link-btn {
@@ -923,7 +927,6 @@ body.scroll-page {
 
   body.scroll-page .nav-section .links {
     gap:14px;
-    grid-template-columns:repeat(4, 1fr);
   }
 
   body.scroll-page .link-btn {
@@ -960,10 +963,6 @@ body.scroll-page {
 
   body.scroll-page .nav-sections {
     max-width:none;
-  }
-
-  body.scroll-page .nav-section .links {
-    grid-template-columns:repeat(4, 1fr);
   }
 }
 
@@ -1060,7 +1059,6 @@ body.scroll-page {
 
   body.scroll-page .nav-section .links {
     gap:16px;
-    grid-template-columns:repeat(4, 1fr);
   }
 
   body.scroll-page .link-btn {
